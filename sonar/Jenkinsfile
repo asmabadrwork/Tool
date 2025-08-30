@@ -4,6 +4,7 @@ pipeline {
   environment {
     ANSIBLE_CONFIG = "${WORKSPACE}/sonar/ansible/ansible.cfg"
     ANSIBLE_PYTHON_INTERPRETER = "/usr/bin/python3"
+    PATH = "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin" // Ensure pip-installed binaries are visible
   }
 
   stages {
@@ -19,8 +20,7 @@ pipeline {
     stage('Ansible Inventory Check') {
       steps {
         dir('sonar/ansible') {
-          // Validate inventory and host discovery
-          sh 'ansible-inventory -i aws_ec2.yaml --graph'
+          sh 'ansible-inventory -i aws_ec2.yaml --graph -e ansible_python_interpreter=${ANSIBLE_PYTHON_INTERPRETER}'
           sh 'ansible -i aws_ec2.yaml tag_SonarQube_Server -m ping -e ansible_python_interpreter=${ANSIBLE_PYTHON_INTERPRETER}'
         }
       }
