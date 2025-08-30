@@ -1,0 +1,27 @@
+pipeline {
+  agent any
+
+  environment {
+    ANSIBLE_CONFIG = "${WORKSPACE}/ansible/ansible.cfg"
+  }
+
+  stages {
+    stage('Terraform Init & Apply') {
+      steps {
+        dir('terraform') {
+          sh 'terraform init'
+          sh 'terraform apply -auto-approve'
+        }
+      }
+    }
+
+    stage('Ansible Provisioning') {
+      steps {
+        dir('ansible') {
+          sh 'ansible-inventory -i aws_ec2.yaml --graph'
+          sh 'ansible-playbook playbook.yml'
+        }
+      }
+    }
+  }
+}

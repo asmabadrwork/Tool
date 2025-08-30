@@ -1,0 +1,60 @@
+- name: Configure SonarQube
+  hosts: tag_SonarQube-Server
+  become: true
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install prerequisites
+      apt:
+        name:
+          - openjdk-11-jdk
+          - wget
+          - unzip
+        state: present
+
+    - name: Download SonarQube
+      get_url:
+        url: https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-9.9.4.87374.zip
+        dest: /tmp/sonarqube.zip
+
+    - name: Extract SonarQube
+      unarchive:
+        src: /tmp/sonarqube.zip
+        dest: /opt/
+        remote_src: yes
+
+    - name: Create symlink
+      file:
+        src: /opt/sonarqube-9.9.4.87374
+        dest: /opt/sonarqube
+        state: link
+
+    - name: Add SonarQube systemd service
+      copy:
+        dest: /etc/systemd/system/sonarqube.service
+        content: |
+          [Unit]
+          Description=SonarQube service
+          After=syslog.target network.target
+
+          [Service]
+          Type=forking
+          ExecStart=/opt/sonarqube/bin/linux-x86-64/sonar.sh start
+          ExecStop=/opt/sonarqube/bin/linux-x86-64/sonar.sh stop
+          User=ubuntu
+          Group=ubuntu
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Reload systemd
+      command: systemctl daemon-reload
+
+    - name: Enable and start SonarQube
+      systemd:
+        name: sonarqube
+        enabled: yes
+        state: started
