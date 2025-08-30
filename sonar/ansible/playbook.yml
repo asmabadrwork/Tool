@@ -1,5 +1,5 @@
 - name: Configure SonarQube
-  hosts: tag_SonarQube-Server
+  hosts: tag_SonarQube_Server
   become: true
   tasks:
     - name: Update apt cache
