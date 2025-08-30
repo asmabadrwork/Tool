@@ -8,6 +8,6 @@ resource "aws_instance" "sonarqube" {
   key_name      = "sonarqube-key"
 
   tags = {
-    Name = "SonarQube-Server"
+    Name = "SonarQube_Server"
   }
 }
