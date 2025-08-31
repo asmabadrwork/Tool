@@ -14,6 +14,19 @@
           - unzip
         state: present
 
+    - name: Create sonar group
+      group:
+        name: sonar
+        state: present
+
+    - name: Create sonar user
+      user:
+        name: sonar
+        group: sonar
+        system: yes
+        shell: /bin/bash
+        create_home: no
+
     - name: Download SonarQube
       get_url:
         url: https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-9.9.4.87374.zip
@@ -24,12 +37,22 @@
         src: /tmp/sonarqube.zip
         dest: /opt/
         remote_src: yes
+        creates: /opt/sonarqube-9.9.4.87374
 
     - name: Create symlink
       file:
         src: /opt/sonarqube-9.9.4.87374
         dest: /opt/sonarqube
         state: link
+        force: yes
+
+    - name: Set ownership of SonarQube directory
+      file:
+        path: /opt/sonarqube-9.9.4.87374
+        state: directory
+        recurse: yes
+        owner: sonar
+        group: sonar
 
     - name: Set SONARQUBE_HOME environment variable
       lineinfile:
@@ -49,8 +72,8 @@
           Type=forking
           ExecStart=/opt/sonarqube/bin/linux-x86-64/sonar.sh start
           ExecStop=/opt/sonarqube/bin/linux-x86-64/sonar.sh stop
-          User=ubuntu
-          Group=ubuntu
+          User=sonar
+          Group=sonar
           Restart=always
           LimitNOFILE=65536
           LimitNPROC=4096
