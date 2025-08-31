@@ -17,6 +17,15 @@ pipeline {
       }
     }
 
+    stage('Wait for EC2 Initialization') {
+      steps {
+        script {
+          echo "Waiting 5 minutes for EC2 to fully initialize (cloud-init, SSH, networking)..."
+          sleep(time: 5, unit: "MINUTES")
+        }
+      }
+    }
+
     stage('Ansible Inventory Check') {
       steps {
         dir('sonar/ansible') {
