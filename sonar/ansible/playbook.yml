@@ -6,10 +6,10 @@
       apt:
         update_cache: yes
 
-    - name: Install prerequisites
+    - name: Install prerequisites (Java 17, wget, unzip)
       apt:
         name:
-          - openjdk-11-jdk
+          - openjdk-17-jdk
           - wget
           - unzip
         state: present
@@ -31,6 +31,12 @@
         dest: /opt/sonarqube
         state: link
 
+    - name: Set SONARQUBE_HOME environment variable
+      lineinfile:
+        dest: /etc/environment
+        line: 'SONARQUBE_HOME=/opt/sonarqube'
+        state: present
+
     - name: Add SonarQube systemd service
       copy:
         dest: /etc/systemd/system/sonarqube.service
@@ -46,6 +52,9 @@
           User=ubuntu
           Group=ubuntu
           Restart=always
+          LimitNOFILE=65536
+          LimitNPROC=4096
+          Environment=JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 
           [Install]
           WantedBy=multi-user.target
